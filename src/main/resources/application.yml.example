@@ -1,0 +1,9 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: monitoria-api
+  data:
+    mongodb:
+      uri: mongodb://<USUARIO>:<SENHA>@cluster-url/monitoria_db?ssl=true&replicaSet=atlas-hfyv36-shard-0&authSource=admin&appName=Cluster0
