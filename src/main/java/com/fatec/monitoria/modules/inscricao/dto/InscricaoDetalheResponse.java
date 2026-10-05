@@ -17,7 +17,6 @@ public class InscricaoDetalheResponse {
     private String justificativaDevolucao;
     private LocalDateTime dataSubmissao;
     private LocalDateTime dataAtualizacao;
-
     private MonitorInfo monitor;
     private TermoInfo termo;
 
@@ -33,43 +32,66 @@ public class InscricaoDetalheResponse {
     @Data
     public static class TermoInfo {
         private String id;
+        private String nomeEstudante;
+        private String ra;
+        private String cpf;
+        private String curso;
         private String disciplina;
+        private String oferta;
+        private Integer cargaHoraria;
         private LocalDate periodoInicio;
         private LocalDate periodoFim;
+        private String editalNumero;
+        private String nomeProfessor;
+        private String nomeCoordenador;
+        private String unidade;
+        private String cidade;
         private LocalDate dataAssinatura;
+        private Integer numeroVias;
         private LocalDateTime dataEnvio;
         private String assinaturaEstudante;
     }
 
-    // monitor e termo podem ser null (ex.: inscrição de teste com id inválido)
     public static InscricaoDetalheResponse of(Inscricao i, Monitor m, TermoCompromisso t) {
         InscricaoDetalheResponse r = new InscricaoDetalheResponse();
-        r.setId(i.getId());
-        r.setStatus(i.getStatus());
-        r.setJustificativaDevolucao(i.getJustificativaDevolucao());
-        r.setDataSubmissao(i.getDataSubmissao());
-        r.setDataAtualizacao(i.getDataAtualizacao());
+        r.id = i.getId();
+        r.status = i.getStatus();
+        r.justificativaDevolucao = i.getJustificativaDevolucao();
+        r.dataSubmissao = i.getDataSubmissao();
+        r.dataAtualizacao = i.getDataAtualizacao();
 
         if (m != null) {
             MonitorInfo mi = new MonitorInfo();
-            mi.setId(m.getId());
-            mi.setNome(m.getNome());
-            mi.setRa(m.getRa());
-            mi.setEmail(m.getEmail());
-            mi.setCurso(m.getCurso());
-            r.setMonitor(mi);
+            mi.id = m.getId();
+            mi.nome = m.getNome();
+            mi.ra = m.getRa();
+            mi.email = m.getEmail();
+            mi.curso = m.getCurso();
+            r.monitor = mi;
         }
 
         if (t != null) {
             TermoInfo ti = new TermoInfo();
-            ti.setId(t.getId());
-            ti.setDisciplina(t.getDisciplina());
-            ti.setPeriodoInicio(t.getPeriodoInicio());
-            ti.setPeriodoFim(t.getPeriodoFim());
-            ti.setDataAssinatura(t.getDataAssinatura());
-            ti.setDataEnvio(t.getDataEnvio());
-            ti.setAssinaturaEstudante(t.getAssinaturaEstudante());
-            r.setTermo(ti);
+            ti.id = t.getId();
+            ti.nomeEstudante = t.getNomeEstudante();
+            ti.ra = t.getRa();
+            ti.cpf = t.getCpf();
+            ti.curso = t.getCurso();
+            ti.disciplina = t.getDisciplina();
+            ti.oferta = t.getOferta();
+            ti.cargaHoraria = t.getCargaHoraria();
+            ti.periodoInicio = t.getPeriodoInicio();
+            ti.periodoFim = t.getPeriodoFim();
+            ti.editalNumero = t.getEditalNumero();
+            ti.nomeProfessor = t.getNomeProfessor();
+            ti.nomeCoordenador = t.getNomeCoordenador();
+            ti.unidade = t.getUnidade();
+            ti.cidade = t.getCidade();
+            ti.dataAssinatura = t.getDataAssinatura();
+            ti.numeroVias = t.getNumeroVias();
+            ti.dataEnvio = t.getDataEnvio();
+            ti.assinaturaEstudante = t.getAssinaturaEstudante();
+            r.termo = ti;
         }
 
         return r;
