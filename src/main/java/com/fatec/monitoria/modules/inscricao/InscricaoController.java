@@ -4,6 +4,7 @@ import com.fatec.monitoria.modules.inscricao.domain.Inscricao;
 import com.fatec.monitoria.modules.inscricao.domain.StatusInscricao;
 import com.fatec.monitoria.modules.inscricao.dto.DevolucaoRequest;
 import com.fatec.monitoria.modules.inscricao.dto.HomologacaoRequest;
+import com.fatec.monitoria.modules.inscricao.dto.InscricaoDetalheResponse;
 import com.fatec.monitoria.modules.inscricao.dto.InscricaoRequest;
 import com.fatec.monitoria.modules.inscricao.dto.InscricaoResponse;
 import jakarta.validation.Valid;
@@ -13,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/inscricoes")
@@ -29,12 +29,9 @@ public class InscricaoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<InscricaoResponse>> listar(
+    public ResponseEntity<List<InscricaoDetalheResponse>> listar(
             @RequestParam(required = false) StatusInscricao status) {
-        List<InscricaoResponse> lista = service.listarPorStatus(status).stream()
-                .map(InscricaoResponse::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(lista);
+        return ResponseEntity.ok(service.listarDetalhado(status));
     }
 
     @PatchMapping("/{id}/aprovar")

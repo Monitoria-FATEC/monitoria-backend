@@ -45,6 +45,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
+                        .requestMatchers(HttpMethod.GET, "/api/inscricoes").hasAnyRole("SUPERVISOR", "GESTAO", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/inscricoes").hasAnyRole("MONITOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/aprovar").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/devolver").hasAnyRole("SUPERVISOR", "ADMIN")
