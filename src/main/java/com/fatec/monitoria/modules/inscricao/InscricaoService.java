@@ -7,6 +7,7 @@ import com.fatec.monitoria.modules.inscricao.dto.InscricaoDetalheResponse;
 import com.fatec.monitoria.modules.inscricao.dto.InscricaoRequest;
 import com.fatec.monitoria.modules.monitor.domain.Monitor;
 import com.fatec.monitoria.modules.monitor.domain.MonitorRepository;
+import com.fatec.monitoria.modules.monitor.domain.StatusDocumento;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromisso;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromissoRepository;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +80,7 @@ public class InscricaoService {
     public Inscricao aprovar(String id) {
         Inscricao inscricao = buscarOuFalhar(id);
         inscricao.setStatus(StatusInscricao.AGUARDANDO_GESTAO);
+        atualizarStatusTermo(inscricao, StatusDocumento.APROVADO, null);
         inscricao.setDataAtualizacao(LocalDateTime.now());
         return repository.save(inscricao);
     }
@@ -87,6 +89,7 @@ public class InscricaoService {
         Inscricao inscricao = buscarOuFalhar(id);
         inscricao.setStatus(StatusInscricao.DEVOLVIDA);
         inscricao.setJustificativaDevolucao(justificativa);
+        atualizarStatusTermo(inscricao, StatusDocumento.DEVOLVIDO, justificativa);
         inscricao.setDataAtualizacao(LocalDateTime.now());
         return repository.save(inscricao);
     }
@@ -95,6 +98,7 @@ public class InscricaoService {
         Inscricao inscricao = buscarOuFalhar(id);
         inscricao.setStatus(StatusInscricao.HOMOLOGADA);
         inscricao.setAssinaturaGestao(assinaturaGestao);
+        atualizarStatusTermo(inscricao, StatusDocumento.APROVADO, null);
         inscricao.setDataAtualizacao(LocalDateTime.now());
         return repository.save(inscricao);
     }
@@ -103,5 +107,16 @@ public class InscricaoService {
         return repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Inscrição não encontrada: " + id));
+    }
+
+    private void atualizarStatusTermo(Inscricao inscricao, StatusDocumento status, String justificativa) {
+        if (inscricao.getIdTermoCompromisso() == null) {
+            return;
+        }
+        termoRepository.findById(inscricao.getIdTermoCompromisso()).ifPresent(termo -> {
+            termo.setStatus(status);
+            termo.setJustificativaDevolucao(justificativa);
+            termoRepository.save(termo);
+        });
     }
 }

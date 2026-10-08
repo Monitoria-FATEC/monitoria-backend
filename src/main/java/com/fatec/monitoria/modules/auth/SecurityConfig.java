@@ -42,6 +42,8 @@ public class SecurityConfig {
 
                         // Pré-cadastro do monitor e envio do termo (fluxo público do front)
                         .requestMatchers(HttpMethod.POST, "/api/monitores", "/api/termos-compromisso").permitAll()
+                        .requestMatchers("/api/monitores/me/**").hasRole("MONITOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/termos-compromisso/*").hasRole("MONITOR")
 
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
