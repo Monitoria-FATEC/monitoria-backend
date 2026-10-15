@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -22,7 +23,13 @@ public class Inscricao {
     private String idGestao;
 
     private String justificativaDevolucao;
+    // Prazo (opcional) que o supervisor dá para o aluno corrigir uma ficha devolvida
+    private LocalDate dataLimiteCorrecao;
     private String assinaturaGestao;
+
+    // Gestão (vice-diretor) marca que enviou o termo para assinatura; o status continua AGUARDANDO_GESTAO
+    private boolean enviadoParaAssinatura;
+    private LocalDateTime dataEnvioAssinatura;
 
     private LocalDateTime dataSubmissao;
     private LocalDateTime dataAtualizacao;

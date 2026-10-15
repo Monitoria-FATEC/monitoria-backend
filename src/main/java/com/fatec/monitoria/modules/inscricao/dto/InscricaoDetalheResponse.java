@@ -15,6 +15,9 @@ public class InscricaoDetalheResponse {
     private String id;
     private StatusInscricao status;
     private String justificativaDevolucao;
+    private LocalDate dataLimiteCorrecao;
+    private boolean enviadoParaAssinatura;
+    private LocalDateTime dataEnvioAssinatura;
     private LocalDateTime dataSubmissao;
     private LocalDateTime dataAtualizacao;
     private MonitorInfo monitor;
@@ -57,6 +60,9 @@ public class InscricaoDetalheResponse {
         r.id = i.getId();
         r.status = i.getStatus();
         r.justificativaDevolucao = i.getJustificativaDevolucao();
+        r.dataLimiteCorrecao = i.getDataLimiteCorrecao();
+        r.enviadoParaAssinatura = i.isEnviadoParaAssinatura();
+        r.dataEnvioAssinatura = i.getDataEnvioAssinatura();
         r.dataSubmissao = i.getDataSubmissao();
         r.dataAtualizacao = i.getDataAtualizacao();
 

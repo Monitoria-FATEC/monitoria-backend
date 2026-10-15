@@ -43,14 +43,21 @@ public class InscricaoController {
     @PatchMapping("/{id}/devolver")
     public ResponseEntity<InscricaoResponse> devolver(
             @PathVariable String id, @Valid @RequestBody DevolucaoRequest request) {
-        Inscricao inscricao = service.devolver(id, request.getJustificativa());
+        Inscricao inscricao = service.devolver(id, request.getJustificativa(), request.getDataLimite());
+        return ResponseEntity.ok(InscricaoResponse.fromEntity(inscricao));
+    }
+
+    @PatchMapping("/{id}/enviar-assinatura")
+    public ResponseEntity<InscricaoResponse> enviarParaAssinatura(@PathVariable String id) {
+        Inscricao inscricao = service.enviarParaAssinatura(id);
         return ResponseEntity.ok(InscricaoResponse.fromEntity(inscricao));
     }
 
     @PatchMapping("/{id}/homologar")
     public ResponseEntity<InscricaoResponse> homologar(
-            @PathVariable String id, @Valid @RequestBody HomologacaoRequest request) {
-        Inscricao inscricao = service.homologar(id, request.getAssinaturaGestao());
+            @PathVariable String id, @RequestBody(required = false) HomologacaoRequest request) {
+        String assinatura = request != null ? request.getAssinaturaGestao() : null;
+        Inscricao inscricao = service.homologar(id, assinatura);
         return ResponseEntity.ok(InscricaoResponse.fromEntity(inscricao));
     }
 }

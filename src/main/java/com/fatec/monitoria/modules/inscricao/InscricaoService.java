@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -83,16 +84,34 @@ public class InscricaoService {
         return repository.save(inscricao);
     }
 
-    public Inscricao devolver(String id, String justificativa) {
+    // dataLimite é opcional: prazo que o supervisor dá para o aluno corrigir a ficha.
+    public Inscricao devolver(String id, String justificativa, LocalDate dataLimite) {
         Inscricao inscricao = buscarOuFalhar(id);
         inscricao.setStatus(StatusInscricao.DEVOLVIDA);
         inscricao.setJustificativaDevolucao(justificativa);
+        inscricao.setDataLimiteCorrecao(dataLimite);
+        // se já tinha sido marcada como enviada para assinatura, o marcador é zerado
+        inscricao.setEnviadoParaAssinatura(false);
+        inscricao.setDataEnvioAssinatura(null);
         inscricao.setDataAtualizacao(LocalDateTime.now());
         return repository.save(inscricao);
     }
 
+    // Gestão avisa que baixou o PDF e enviou para assinatura.
+    // Para o aluno o status continua AGUARDANDO_GESTAO.
+    public Inscricao enviarParaAssinatura(String id) {
+        Inscricao inscricao = buscarOuFalhar(id);
+        exigirStatus(inscricao, StatusInscricao.AGUARDANDO_GESTAO);
+        inscricao.setEnviadoParaAssinatura(true);
+        inscricao.setDataEnvioAssinatura(LocalDateTime.now());
+        inscricao.setDataAtualizacao(LocalDateTime.now());
+        return repository.save(inscricao);
+    }
+
+    // Gestão clica em "homologado" depois que o termo foi assinado fora do sistema.
     public Inscricao homologar(String id, String assinaturaGestao) {
         Inscricao inscricao = buscarOuFalhar(id);
+        exigirStatus(inscricao, StatusInscricao.AGUARDANDO_GESTAO);
         inscricao.setStatus(StatusInscricao.HOMOLOGADA);
         inscricao.setAssinaturaGestao(assinaturaGestao);
         inscricao.setDataAtualizacao(LocalDateTime.now());
@@ -103,5 +122,13 @@ public class InscricaoService {
         return repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Inscrição não encontrada: " + id));
+    }
+
+    private void exigirStatus(Inscricao inscricao, StatusInscricao esperado) {
+        if (inscricao.getStatus() != esperado) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Operação inválida: a inscrição está em " + inscricao.getStatus()
+                            + " e precisa estar em " + esperado);
+        }
     }
 }

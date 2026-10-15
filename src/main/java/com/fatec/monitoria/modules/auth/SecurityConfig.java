@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/inscricoes").hasAnyRole("MONITOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/aprovar").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/devolver").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/enviar-assinatura").hasAnyRole("GESTAO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/homologar").hasAnyRole("GESTAO", "ADMIN")
 
                         .anyRequest().authenticated()
