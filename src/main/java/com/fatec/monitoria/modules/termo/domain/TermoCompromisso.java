@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fatec.monitoria.modules.monitor.domain.StatusDocumento;
 
 @Data
 @Document(collection = "termos_compromisso")
@@ -33,4 +34,6 @@ public class TermoCompromisso {
     private String assinaturaEstudante;
 
     private LocalDateTime dataEnvio;
+    private StatusDocumento status = StatusDocumento.AGUARDANDO;
+    private String justificativaDevolucao;
 }

@@ -19,4 +19,14 @@ public class Monitor {
     private String curso;
     private StatusInscricao status;
     private LocalDateTime dataEnvio;
+    private StatusDocumento statusContaAgencia = StatusDocumento.AGUARDANDO;
+    private String numeroConta;
+    private String agencia;
+    private String telefone;
+    private String localAtendimento;
+    private String horariosAtendimento;
+    private String linkWhatsapp;
+    private String linkTeams;
+    private Boolean perfilAtivo = true;
+    private String justificativaContaAgencia;
 }

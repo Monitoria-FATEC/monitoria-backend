@@ -7,6 +7,7 @@ import com.fatec.monitoria.modules.inscricao.dto.InscricaoDetalheResponse;
 import com.fatec.monitoria.modules.inscricao.dto.InscricaoRequest;
 import com.fatec.monitoria.modules.monitor.domain.Monitor;
 import com.fatec.monitoria.modules.monitor.domain.MonitorRepository;
+import com.fatec.monitoria.modules.monitor.domain.StatusDocumento;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromisso;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromissoRepository;
 import lombok.RequiredArgsConstructor;
@@ -80,6 +81,7 @@ public class InscricaoService {
     public Inscricao aprovar(String id) {
         Inscricao inscricao = buscarOuFalhar(id);
         inscricao.setStatus(StatusInscricao.AGUARDANDO_GESTAO);
+        atualizarStatusTermo(inscricao, StatusDocumento.APROVADO, null);
         inscricao.setDataAtualizacao(LocalDateTime.now());
         return repository.save(inscricao);
     }
@@ -93,6 +95,7 @@ public class InscricaoService {
         // se já tinha sido marcada como enviada para assinatura, o marcador é zerado
         inscricao.setEnviadoParaAssinatura(false);
         inscricao.setDataEnvioAssinatura(null);
+        atualizarStatusTermo(inscricao, StatusDocumento.DEVOLVIDO, justificativa);
         inscricao.setDataAtualizacao(LocalDateTime.now());
         return repository.save(inscricao);
     }
@@ -114,6 +117,7 @@ public class InscricaoService {
         exigirStatus(inscricao, StatusInscricao.AGUARDANDO_GESTAO);
         inscricao.setStatus(StatusInscricao.HOMOLOGADA);
         inscricao.setAssinaturaGestao(assinaturaGestao);
+        atualizarStatusTermo(inscricao, StatusDocumento.APROVADO, null);
         inscricao.setDataAtualizacao(LocalDateTime.now());
         return repository.save(inscricao);
     }
@@ -130,5 +134,17 @@ public class InscricaoService {
                     "Operação inválida: a inscrição está em " + inscricao.getStatus()
                             + " e precisa estar em " + esperado);
         }
+    }
+
+    // Mantém o status do termo (mostrado no dashboard do monitor) em sincronia com a inscrição.
+    private void atualizarStatusTermo(Inscricao inscricao, StatusDocumento status, String justificativa) {
+        if (inscricao.getIdTermoCompromisso() == null) {
+            return;
+        }
+        termoRepository.findById(inscricao.getIdTermoCompromisso()).ifPresent(termo -> {
+            termo.setStatus(status);
+            termo.setJustificativaDevolucao(justificativa);
+            termoRepository.save(termo);
+        });
     }
 }
