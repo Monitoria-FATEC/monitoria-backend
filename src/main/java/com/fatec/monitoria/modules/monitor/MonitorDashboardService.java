@@ -30,12 +30,23 @@ public class MonitorDashboardService {
         return montarResposta(monitor);
     }
 
+    // Só com o termo homologado. Primeiro envio, ou reenvio depois que o supervisor devolveu.
     public MonitorDashboardResponse salvarContaAgencia(String email, ContaAgenciaRequest request) {
         Monitor monitor = buscarMonitor(email);
+        exigirTermoHomologado(monitor);
+
+        boolean jaEnviou = monitor.getNumeroConta() != null && monitor.getAgencia() != null;
+        if (jaEnviou && monitor.getStatusContaAgencia() != StatusDocumento.DEVOLVIDO) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Conta e agência já enviadas (status: " + monitor.getStatusContaAgencia()
+                            + "). Só é possível reenviar se o supervisor devolver.");
+        }
+
         monitor.setNumeroConta(request.getNumeroConta());
         monitor.setAgencia(request.getAgencia());
         monitor.setStatusContaAgencia(StatusDocumento.AGUARDANDO);
         monitor.setJustificativaContaAgencia(null);
+        monitor.setDataLimiteContaAgencia(null);
         return salvarERetornar(monitor);
     }
 
@@ -75,6 +86,14 @@ public class MonitorDashboardService {
                         Comparator.nullsFirst(Comparator.naturalOrder())))
                 .map(Inscricao::getStatus)
                 .orElse(null);
+    }
+
+    // Regra do stakeholder: conta e agência só depois que o termo foi homologado.
+    private void exigirTermoHomologado(Monitor monitor) {
+        if (statusDaInscricao(monitor) != StatusInscricao.HOMOLOGADA) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Conta e agência só são liberadas depois que o termo for homologado");
+        }
     }
 
     private Monitor buscarMonitor(String email) {
