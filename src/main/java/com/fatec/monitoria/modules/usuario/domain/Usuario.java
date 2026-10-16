@@ -30,9 +30,10 @@ public class Usuario implements UserDetails {
 
     private boolean ativo = true;
 
-    // Recuperação de senha (US-03)
+    // Recuperação de senha: código de 6 dígitos guardado só como hash, com validade curta
     private String tokenRecuperacao;
     private LocalDateTime expiracaoTokenRecuperacao;
+    private int tentativasToken;
 
     private LocalDateTime dataCriacao = LocalDateTime.now();
 
