@@ -76,21 +76,21 @@ public class MonitorDashboardService {
 
     private MonitorDashboardResponse montarResposta(Monitor monitor) {
         TermoCompromisso termo = termoRepository.findFirstByRaOrderByDataEnvioDesc(monitor.getRa()).orElse(null);
-        return MonitorDashboardResponse.of(monitor, termo, statusDaInscricao(monitor));
+        return MonitorDashboardResponse.of(monitor, termo, inscricaoMaisRecente(monitor));
     }
 
-    // Status da inscrição mais recente do monitor (null se ele ainda não tem inscrição).
-    private StatusInscricao statusDaInscricao(Monitor monitor) {
+    // Inscrição mais recente do monitor (null se ele ainda não tem inscrição).
+    private Inscricao inscricaoMaisRecente(Monitor monitor) {
         return inscricaoRepository.findByIdMonitor(monitor.getId()).stream()
                 .max(Comparator.comparing(Inscricao::getDataSubmissao,
                         Comparator.nullsFirst(Comparator.naturalOrder())))
-                .map(Inscricao::getStatus)
                 .orElse(null);
     }
 
     // Regra do stakeholder: conta e agência só depois que o termo foi homologado.
     private void exigirTermoHomologado(Monitor monitor) {
-        if (statusDaInscricao(monitor) != StatusInscricao.HOMOLOGADA) {
+        Inscricao inscricao = inscricaoMaisRecente(monitor);
+        if (inscricao == null || inscricao.getStatus() != StatusInscricao.HOMOLOGADA) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Conta e agência só são liberadas depois que o termo for homologado");
         }

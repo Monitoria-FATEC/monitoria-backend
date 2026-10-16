@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 
 @Service
@@ -57,15 +58,39 @@ public class TermoCompromissoService {
                             + inscricao.getStatus() + ")");
         }
 
-        termo.setDisciplina(request.getDisciplina());
-        termo.setOferta(request.getOferta());
+        // obrigatórios
+        termo.setDisciplina(request.getDisciplina().trim());
+        termo.setOferta(request.getOferta().trim());
         termo.setCargaHoraria(request.getCargaHoraria());
-        if (request.getPeriodoInicio() != null && !request.getPeriodoInicio().isBlank()) {
-            termo.setPeriodoInicio(LocalDate.parse(request.getPeriodoInicio()));
+
+        // datas (o RA nunca muda)
+        if (naoVazio(request.getPeriodoInicio())) {
+            termo.setPeriodoInicio(lerData(request.getPeriodoInicio(), "início do período"));
         }
-        if (request.getPeriodoFim() != null && !request.getPeriodoFim().isBlank()) {
-            termo.setPeriodoFim(LocalDate.parse(request.getPeriodoFim()));
+        if (naoVazio(request.getPeriodoFim())) {
+            termo.setPeriodoFim(lerData(request.getPeriodoFim(), "fim do período"));
         }
+        if (termo.getPeriodoInicio() != null && termo.getPeriodoFim() != null
+                && termo.getPeriodoFim().isBefore(termo.getPeriodoInicio())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "O fim do período não pode ser antes do início");
+        }
+        if (naoVazio(request.getDataAssinatura())) {
+            termo.setDataAssinatura(lerData(request.getDataAssinatura(), "data de assinatura"));
+        }
+
+        // opcionais: só troca quando vier preenchido
+        if (naoVazio(request.getNomeEstudante())) termo.setNomeEstudante(request.getNomeEstudante().trim());
+        if (naoVazio(request.getCpf())) termo.setCpf(request.getCpf().trim());
+        if (naoVazio(request.getCurso())) termo.setCurso(request.getCurso().trim());
+        if (naoVazio(request.getEditalNumero())) termo.setEditalNumero(request.getEditalNumero().trim());
+        if (naoVazio(request.getNomeProfessor())) termo.setNomeProfessor(request.getNomeProfessor().trim());
+        if (naoVazio(request.getNomeCoordenador())) termo.setNomeCoordenador(request.getNomeCoordenador().trim());
+        if (naoVazio(request.getUnidade())) termo.setUnidade(request.getUnidade().trim());
+        if (naoVazio(request.getCidade())) termo.setCidade(request.getCidade().trim());
+        if (request.getNumeroVias() != null) termo.setNumeroVias(request.getNumeroVias());
+        if (naoVazio(request.getAssinaturaEstudante())) termo.setAssinaturaEstudante(request.getAssinaturaEstudante());
+
         termo.setStatus(StatusDocumento.AGUARDANDO);
         termo.setJustificativaDevolucao(null);
         termo.setDataEnvio(LocalDateTime.now());
@@ -80,5 +105,18 @@ public class TermoCompromissoService {
             inscricaoRepository.save(inscricao);
         }
         return salvo;
+    }
+
+    private boolean naoVazio(String valor) {
+        return valor != null && !valor.isBlank();
+    }
+
+    private LocalDate lerData(String valor, String campo) {
+        try {
+            return LocalDate.parse(valor.trim());
+        } catch (DateTimeParseException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Data inválida em " + campo + " (use AAAA-MM-DD)");
+        }
     }
 }
