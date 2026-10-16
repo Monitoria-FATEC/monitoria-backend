@@ -9,4 +9,6 @@ public interface InscricaoRepository extends MongoRepository<Inscricao, String> 
     List<Inscricao> findByStatus(StatusInscricao status);
 
     List<Inscricao> findByIdMonitor(String idMonitor);
+
+    List<Inscricao> findByIdTermoCompromisso(String idTermoCompromisso);
 }

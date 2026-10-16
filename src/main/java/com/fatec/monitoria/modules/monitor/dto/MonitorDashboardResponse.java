@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,6 +31,7 @@ public class MonitorDashboardResponse {
     private String justificativaTermo;
     private StatusDocumento statusContaAgencia;
     private String justificativaContaAgencia;
+    private LocalDate dataLimiteContaAgencia;
     private String numeroConta;
     private String agencia;
     private String telefone;
@@ -49,6 +52,7 @@ public class MonitorDashboardResponse {
         response.statusInscricao = statusInscricao;
         response.statusContaAgencia = monitor.getStatusContaAgencia() == null ? StatusDocumento.AGUARDANDO : monitor.getStatusContaAgencia();
         response.justificativaContaAgencia = monitor.getJustificativaContaAgencia();
+        response.dataLimiteContaAgencia = monitor.getDataLimiteContaAgencia();
         response.numeroConta = monitor.getNumeroConta();
         response.agencia = monitor.getAgencia();
         response.telefone = monitor.getTelefone();
