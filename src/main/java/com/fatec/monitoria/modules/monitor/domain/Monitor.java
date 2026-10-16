@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -29,4 +30,6 @@ public class Monitor {
     private String linkTeams;
     private Boolean perfilAtivo = true;
     private String justificativaContaAgencia;
+    // Prazo (opcional) que o supervisor dá para o monitor corrigir conta/agência devolvida
+    private LocalDate dataLimiteContaAgencia;
 }

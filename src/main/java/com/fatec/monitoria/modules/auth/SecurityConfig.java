@@ -45,6 +45,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/monitores/me/**").hasRole("MONITOR")
                         .requestMatchers(HttpMethod.PUT, "/api/termos-compromisso/*").hasRole("MONITOR")
 
+                        // Supervisor confere conta e agência dos monitores
+                        .requestMatchers(HttpMethod.GET, "/api/monitores/conta-agencia").hasAnyRole("SUPERVISOR", "GESTAO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/conta-agencia/aprovar").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/conta-agencia/devolver").hasAnyRole("SUPERVISOR", "ADMIN")
+
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/api/inscricoes").hasAnyRole("SUPERVISOR", "GESTAO", "ADMIN")

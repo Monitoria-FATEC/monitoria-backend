@@ -1,8 +1,8 @@
 package com.fatec.monitoria.modules.monitor.dto;
 
+import com.fatec.monitoria.modules.inscricao.domain.StatusInscricao;
 import com.fatec.monitoria.modules.monitor.domain.Monitor;
 import com.fatec.monitoria.modules.monitor.domain.StatusDocumento;
-import com.fatec.monitoria.modules.monitor.domain.StatusInscricao;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromisso;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,14 +38,15 @@ public class MonitorDashboardResponse {
     private String linkTeams;
     private boolean perfilAtivo;
 
-    public static MonitorDashboardResponse of(Monitor monitor, TermoCompromisso termo) {
+    // statusInscricao vem da inscrição mais recente do monitor (null se ainda não existe)
+    public static MonitorDashboardResponse of(Monitor monitor, TermoCompromisso termo, StatusInscricao statusInscricao) {
         MonitorDashboardResponse response = new MonitorDashboardResponse();
         response.id = monitor.getId();
         response.nome = monitor.getNome();
         response.email = monitor.getEmail();
         response.curso = monitor.getCurso();
         response.ra = monitor.getRa();
-        response.statusInscricao = monitor.getStatus();
+        response.statusInscricao = statusInscricao;
         response.statusContaAgencia = monitor.getStatusContaAgencia() == null ? StatusDocumento.AGUARDANDO : monitor.getStatusContaAgencia();
         response.justificativaContaAgencia = monitor.getJustificativaContaAgencia();
         response.numeroConta = monitor.getNumeroConta();

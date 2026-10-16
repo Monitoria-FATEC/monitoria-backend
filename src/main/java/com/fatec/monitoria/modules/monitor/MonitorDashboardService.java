@@ -1,5 +1,8 @@
 package com.fatec.monitoria.modules.monitor;
 
+import com.fatec.monitoria.modules.inscricao.domain.Inscricao;
+import com.fatec.monitoria.modules.inscricao.domain.InscricaoRepository;
+import com.fatec.monitoria.modules.inscricao.domain.StatusInscricao;
 import com.fatec.monitoria.modules.monitor.domain.Monitor;
 import com.fatec.monitoria.modules.monitor.domain.MonitorRepository;
 import com.fatec.monitoria.modules.monitor.domain.StatusDocumento;
@@ -13,16 +16,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Comparator;
+
 @Service
 @RequiredArgsConstructor
 public class MonitorDashboardService {
     private final MonitorRepository monitorRepository;
     private final TermoCompromissoRepository termoRepository;
+    private final InscricaoRepository inscricaoRepository;
 
     public MonitorDashboardResponse buscar(String email) {
         Monitor monitor = buscarMonitor(email);
-        TermoCompromisso termo = termoRepository.findFirstByRaOrderByDataEnvioDesc(monitor.getRa()).orElse(null);
-        return MonitorDashboardResponse.of(monitor, termo);
+        return montarResposta(monitor);
     }
 
     public MonitorDashboardResponse salvarContaAgencia(String email, ContaAgenciaRequest request) {
@@ -55,8 +60,21 @@ public class MonitorDashboardService {
 
     private MonitorDashboardResponse salvarERetornar(Monitor monitor) {
         monitorRepository.save(monitor);
+        return montarResposta(monitor);
+    }
+
+    private MonitorDashboardResponse montarResposta(Monitor monitor) {
         TermoCompromisso termo = termoRepository.findFirstByRaOrderByDataEnvioDesc(monitor.getRa()).orElse(null);
-        return MonitorDashboardResponse.of(monitor, termo);
+        return MonitorDashboardResponse.of(monitor, termo, statusDaInscricao(monitor));
+    }
+
+    // Status da inscrição mais recente do monitor (null se ele ainda não tem inscrição).
+    private StatusInscricao statusDaInscricao(Monitor monitor) {
+        return inscricaoRepository.findByIdMonitor(monitor.getId()).stream()
+                .max(Comparator.comparing(Inscricao::getDataSubmissao,
+                        Comparator.nullsFirst(Comparator.naturalOrder())))
+                .map(Inscricao::getStatus)
+                .orElse(null);
     }
 
     private Monitor buscarMonitor(String email) {
