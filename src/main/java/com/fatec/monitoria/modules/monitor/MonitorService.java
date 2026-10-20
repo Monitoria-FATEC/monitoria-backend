@@ -5,6 +5,8 @@ import com.fatec.monitoria.modules.monitor.domain.MonitorRepository;
 import com.fatec.monitoria.modules.monitor.domain.StatusInscricao;
 import com.fatec.monitoria.modules.monitor.dto.AtualizarStatusRequest;
 import com.fatec.monitoria.modules.monitor.dto.MonitorCadastroRequest;
+import com.fatec.monitoria.validacao.DisponibilidadeCadastroService;
+import com.fatec.monitoria.validacao.Regras;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,25 +20,30 @@ import java.util.List;
 public class MonitorService {
 
     private final MonitorRepository repository;
+    private final DisponibilidadeCadastroService disponibilidade;
 
     public Monitor cadastrar(MonitorCadastroRequest request) {
+        String nome = Regras.normalizarNome(request.getNome());
+        String email = Regras.normalizarEmail(request.getEmail());
+        String ra = Regras.normalizarTexto(request.getRa());
+
+        // a conta de acesso já foi criada neste mesmo cadastro, então só olha a coleção de monitores
+        disponibilidade.exigirDisponiveis(email, ra, false);
+
         Monitor monitor = new Monitor();
-        monitor.setNome(request.getNome());
-        monitor.setRa(request.getRa());
-        monitor.setEmail(request.getEmail());
-        monitor.setCurso(request.getCurso());
+        monitor.setNome(nome);
+        monitor.setRa(ra);
+        monitor.setEmail(email);
+        monitor.setCurso(Regras.normalizarTexto(request.getCurso()));
         monitor.setStatus(StatusInscricao.AGUARDANDO_SUPERVISOR);
         monitor.setDataEnvio(LocalDateTime.now());
 
         return repository.save(monitor);
     }
 
-    
     public List<Monitor> listarTodos() {
-
         return repository.findAll();
     }
-
 
     public Monitor atualizarStatus(String id, AtualizarStatusRequest request) {
         Monitor monitor = repository.findById(id)

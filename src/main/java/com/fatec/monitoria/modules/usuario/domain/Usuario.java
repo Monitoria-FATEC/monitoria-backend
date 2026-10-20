@@ -30,6 +30,14 @@ public class Usuario implements UserDetails {
 
     private boolean ativo = true;
 
+    // Confirmação do e-mail no cadastro. O padrão é false de propósito: contas antigas,
+    // que não têm esse campo no banco, continuam liberadas.
+    private boolean emailPendenteVerificacao = false;
+    private String codigoVerificacaoHash;
+    private LocalDateTime expiracaoCodigoVerificacao;
+    private int tentativasCodigoVerificacao;
+    private LocalDateTime ultimoEnvioCodigoVerificacao;
+
     // Recuperação de senha por código enviado por e-mail (US-03).
     // O código nunca é guardado em texto: só o hash dele.
     private String codigoRecuperacaoHash;

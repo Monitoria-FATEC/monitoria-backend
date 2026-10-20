@@ -12,6 +12,7 @@ public class UsuarioResponse {
     private String email;
     private Role role;
     private boolean ativo;
+    private boolean emailPendenteVerificacao;
 
     public static UsuarioResponse fromEntity(Usuario u) {
         UsuarioResponse r = new UsuarioResponse();
@@ -20,6 +21,7 @@ public class UsuarioResponse {
         r.setEmail(u.getEmail());
         r.setRole(u.getRole());
         r.setAtivo(u.isAtivo());
+        r.setEmailPendenteVerificacao(u.isEmailPendenteVerificacao());
         return r;
     }
 }

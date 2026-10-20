@@ -40,8 +40,8 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Pré-cadastro do monitor e envio do termo (fluxo público do front)
-                        .requestMatchers(HttpMethod.POST, "/api/monitores", "/api/termos-compromisso").permitAll()
+                        // Cadastro do monitor e envio do termo: só com a conta confirmada e logada
+                        .requestMatchers(HttpMethod.POST, "/api/monitores", "/api/termos-compromisso").hasRole("MONITOR")
                         .requestMatchers("/api/monitores/me/**").hasRole("MONITOR")
                         .requestMatchers(HttpMethod.PUT, "/api/termos-compromisso/*").hasRole("MONITOR")
 

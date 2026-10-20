@@ -11,12 +11,16 @@ import com.fatec.monitoria.modules.monitor.dto.MonitorDashboardResponse;
 import com.fatec.monitoria.modules.monitor.dto.PerfilMonitorRequest;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromisso;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromissoRepository;
+import com.fatec.monitoria.validacao.CampoDuplicadoException;
+import com.fatec.monitoria.validacao.Regras;
+import com.fatec.monitoria.validacao.TelefoneBrValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -55,11 +59,22 @@ public class MonitorDashboardService {
         if (monitor.getStatusContaAgencia() != StatusDocumento.APROVADO) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "O perfil só pode ser editado após a aprovação da conta e agência");
         }
-        monitor.setTelefone(request.getTelefone());
-        monitor.setLocalAtendimento(request.getLocalAtendimento());
-        monitor.setHorariosAtendimento(request.getHorariosAtendimento());
-        monitor.setLinkWhatsapp(request.getLinkWhatsapp());
-        monitor.setLinkTeams(request.getLinkTeams());
+
+        // telefone gravado sempre no mesmo formato, e não pode ser de outro monitor
+        String telefone = null;
+        if (request.getTelefone() != null && !request.getTelefone().isBlank()) {
+            telefone = TelefoneBrValidator.formatar(request.getTelefone());
+            List<String> grafias = List.of(telefone, TelefoneBrValidator.nacional(telefone));
+            if (monitorRepository.existsByTelefoneInAndIdNot(grafias, monitor.getId())) {
+                throw new CampoDuplicadoException("telefone", "Este telefone já está cadastrado para outro monitor");
+            }
+        }
+
+        monitor.setTelefone(telefone);
+        monitor.setLocalAtendimento(vazioParaNulo(request.getLocalAtendimento()));
+        monitor.setHorariosAtendimento(vazioParaNulo(request.getHorariosAtendimento()));
+        monitor.setLinkWhatsapp(vazioParaNulo(request.getLinkWhatsapp()));
+        monitor.setLinkTeams(vazioParaNulo(request.getLinkTeams()));
         return salvarERetornar(monitor);
     }
 
@@ -67,6 +82,11 @@ public class MonitorDashboardService {
         Monitor monitor = buscarMonitor(email);
         monitor.setPerfilAtivo(false);
         monitorRepository.save(monitor);
+    }
+
+    private String vazioParaNulo(String valor) {
+        String limpo = Regras.normalizarTexto(valor);
+        return limpo == null || limpo.isEmpty() ? null : limpo;
     }
 
     private MonitorDashboardResponse salvarERetornar(Monitor monitor) {

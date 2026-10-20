@@ -1,5 +1,7 @@
 package com.fatec.monitoria.config;
 
+import com.fatec.monitoria.validacao.CampoDuplicadoException;
+import com.fatec.monitoria.validacao.CampoInvalidoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,6 +17,18 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // 409 com os campos que já estão em uso (e-mail, RA, CPF...)
+    @ExceptionHandler(CampoDuplicadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarDuplicado(CampoDuplicadoException ex) {
+        return resposta(HttpStatus.CONFLICT, ex.getReason(), ex.getCampos());
+    }
+
+    // 400 com os campos inválidos em regras que cruzam campos (período, datas...)
+    @ExceptionHandler(CampoInvalidoException.class)
+    public ResponseEntity<Map<String, Object>> tratarCampoInvalido(CampoInvalidoException ex) {
+        return resposta(HttpStatus.BAD_REQUEST, ex.getReason(), ex.getCampos());
+    }
 
     // 404, 403, 409... lançados nos services com ResponseStatusException
     @ExceptionHandler(ResponseStatusException.class)

@@ -7,6 +7,8 @@ import com.fatec.monitoria.modules.usuario.dto.CadastroRequest;
 import com.fatec.monitoria.modules.usuario.dto.LoginRequest;
 import com.fatec.monitoria.modules.usuario.dto.LoginResponse;
 import com.fatec.monitoria.modules.usuario.dto.UsuarioResponse;
+import com.fatec.monitoria.validacao.DisponibilidadeCadastroService;
+import com.fatec.monitoria.validacao.Regras;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,21 +26,34 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final DisponibilidadeCadastroService disponibilidade;
+    private final VerificacaoEmailService verificacaoEmail;
 
     public Usuario cadastrar(CadastroRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
+        String email = Regras.normalizarEmail(request.getEmail());
 
-        if (usuarioRepository.existsByEmail(email)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
-        }
+        // e-mail não pode existir como usuário confirmado nem como monitor
+        disponibilidade.exigirDisponiveis(email, null, true);
 
-        Usuario usuario = new Usuario();
-        usuario.setNome(request.getNome().trim());
+        // se já existe uma conta ainda não confirmada com esse e-mail, ela é refeita com os dados novos
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email)
+                .filter(Usuario::isEmailPendenteVerificacao)
+                .orElseGet(Usuario::new);
+
+        boolean exigirConfirmacao = verificacaoEmail.isExigida();
+
+        usuario.setNome(Regras.normalizarNome(request.getNome()));
         usuario.setEmail(email);
         usuario.setSenha(passwordEncoder.encode(request.getSenha()));
         usuario.setRole(Role.MONITOR);
+        usuario.setEmailPendenteVerificacao(exigirConfirmacao);
 
-        return usuarioRepository.save(usuario);
+        usuario = usuarioRepository.save(usuario);
+
+        if (exigirConfirmacao) {
+            verificacaoEmail.enviarCodigo(usuario);
+        }
+        return usuario;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -53,6 +68,12 @@ public class AuthService {
 
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "E-mail ou senha inválidos"));
+
+        // senha certa, mas o e-mail ainda não foi confirmado
+        if (usuario.isEmailPendenteVerificacao()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Confirme seu e-mail para entrar. Enviamos um código de verificação no cadastro.");
+        }
 
         String token = jwtService.gerarToken(usuario);
         return new LoginResponse(token, "Bearer", UsuarioResponse.fromEntity(usuario));

@@ -30,7 +30,7 @@ public class MonitorDashboardController {
     @PutMapping("/perfil")
     public ResponseEntity<MonitorDashboardResponse> perfil(
             Authentication authentication,
-            @RequestBody PerfilMonitorRequest request) {
+            @Valid @RequestBody PerfilMonitorRequest request) {
         return ResponseEntity.ok(service.atualizarPerfil(authentication.getName(), request));
     }
 

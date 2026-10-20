@@ -43,6 +43,17 @@ public class EmailService {
         enviar(destinatario, assunto, texto, codigo);
     }
 
+    public void enviarCodigoVerificacao(String destinatario, String nome, String codigo, int validadeMinutos) {
+        String assunto = "Confirme seu e-mail - Monitoria Fatec";
+        String texto = "Olá, " + primeiroNome(nome) + "!\n\n"
+                + "Seu código para confirmar o e-mail e concluir o cadastro é: " + codigo + "\n\n"
+                + "Ele vale por " + validadeMinutos + " minutos. "
+                + "Se você não fez esse cadastro, ignore este e-mail.\n\n"
+                + "Monitoria Acadêmica - Fatec Zona Leste";
+
+        enviar(destinatario, assunto, texto, codigo);
+    }
+
     private void enviar(String destinatario, String assunto, String texto, String codigo) {
         JavaMailSender sender = mailSender.getIfAvailable();
 

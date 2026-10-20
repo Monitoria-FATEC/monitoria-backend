@@ -4,10 +4,12 @@ import com.fatec.monitoria.modules.monitor.domain.Monitor;
 import com.fatec.monitoria.modules.monitor.dto.AtualizarStatusRequest;
 import com.fatec.monitoria.modules.monitor.dto.MonitorCadastroRequest;
 import com.fatec.monitoria.modules.monitor.dto.MonitorResponse;
+import com.fatec.monitoria.validacao.DonoDoCadastro;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,9 +20,15 @@ import java.util.List;
 public class MonitorController {
 
     private final MonitorService service;
+    private final DonoDoCadastro donoDoCadastro;
 
     @PostMapping
-    public ResponseEntity<MonitorResponse> cadastrar(@Valid @RequestBody MonitorCadastroRequest request) {
+    public ResponseEntity<MonitorResponse> cadastrar(
+            Authentication authentication,
+            @Valid @RequestBody MonitorCadastroRequest request) {
+        // só dá para cadastrar o monitor com o e-mail da própria conta logada
+        donoDoCadastro.exigirMesmoEmail(authentication.getName(), request.getEmail());
+
         Monitor monitor = service.cadastrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(MonitorResponse.fromEntity(monitor));
     }
