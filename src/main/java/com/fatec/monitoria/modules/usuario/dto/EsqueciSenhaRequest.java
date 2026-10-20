@@ -10,5 +10,4 @@ public class EsqueciSenhaRequest {
     @NotBlank(message = "O e-mail é obrigatório")
     @Email(message = "E-mail inválido")
     private String email;
-} class usuario {
 }
