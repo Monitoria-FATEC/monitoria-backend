@@ -55,14 +55,21 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/monitores/*/gestao").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/ativo").hasAnyRole("SUPERVISOR", "ADMIN")
 
+                        // Listagem geral e troca de status de monitores: só supervisão
+                        // (antes caíam no anyRequest e qualquer usuário logado alcançava)
+                        .requestMatchers(HttpMethod.GET, "/api/monitores").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/status").hasAnyRole("SUPERVISOR", "ADMIN")
+
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
+                        // Inscrições: a Gestão assina fora do sistema, então quem atualiza
+                        // o status (aprovar, devolver, enviar para assinatura, homologar) é o supervisor
                         .requestMatchers(HttpMethod.GET, "/api/inscricoes").hasAnyRole("SUPERVISOR", "GESTAO", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/inscricoes").hasAnyRole("MONITOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/aprovar").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/devolver").hasAnyRole("SUPERVISOR", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/enviar-assinatura").hasAnyRole("GESTAO", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/homologar").hasAnyRole("GESTAO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/enviar-assinatura").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/inscricoes/*/homologar").hasAnyRole("SUPERVISOR", "ADMIN")
 
                         .anyRequest().authenticated()
                 )
