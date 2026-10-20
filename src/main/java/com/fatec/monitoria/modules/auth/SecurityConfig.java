@@ -50,6 +50,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/conta-agencia/aprovar").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/conta-agencia/devolver").hasAnyRole("SUPERVISOR", "ADMIN")
 
+                        // Supervisor gerencia monitores (listar, editar, ativar/desativar)
+                        .requestMatchers(HttpMethod.GET, "/api/monitores/gestao").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/monitores/*/gestao").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/ativo").hasAnyRole("SUPERVISOR", "ADMIN")
+
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/api/inscricoes").hasAnyRole("SUPERVISOR", "GESTAO", "ADMIN")
