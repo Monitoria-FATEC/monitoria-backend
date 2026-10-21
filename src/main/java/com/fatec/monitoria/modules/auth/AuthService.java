@@ -78,4 +78,24 @@ public class AuthService {
         String token = jwtService.gerarToken(usuario);
         return new LoginResponse(token, "Bearer", UsuarioResponse.fromEntity(usuario));
     }
+
+    // Primeiro acesso com a senha temporária que o supervisor entregou: o usuário cria a própria.
+    public Usuario trocarSenhaTemporaria(String email, String novaSenha) {
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+
+        if (!usuario.isSenhaTemporaria()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Sua senha não é temporária. Para trocá-la, use \"Esqueci minha senha\" na tela de entrar.");
+        }
+
+        if (passwordEncoder.matches(novaSenha, usuario.getSenha())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A nova senha precisa ser diferente da senha temporária.");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuario.setSenhaTemporaria(false);
+        return usuarioRepository.save(usuario);
+    }
 }

@@ -88,6 +88,8 @@ public class RecuperacaoSenhaService {
         Usuario usuario = conferirCodigo(emailInformado, codigo);
 
         usuario.setSenha(passwordEncoder.encode(novaSenha));
+        // quem definiu a própria senha não precisa mais trocar a temporária
+        usuario.setSenhaTemporaria(false);
         limparCodigo(usuario);
         usuarioRepository.save(usuario);
 

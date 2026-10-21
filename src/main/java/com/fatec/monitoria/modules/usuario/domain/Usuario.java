@@ -30,6 +30,11 @@ public class Usuario implements UserDetails {
 
     private boolean ativo = true;
 
+    // Senha gerada pelo supervisor (cadastro manual ou "nova senha"): o usuário é obrigado a
+    // trocar no primeiro acesso. O padrão é false de propósito: contas antigas, que não têm
+    // esse campo no banco, não são afetadas.
+    private boolean senhaTemporaria = false;
+
     // Confirmação do e-mail no cadastro. O padrão é false de propósito: contas antigas,
     // que não têm esse campo no banco, continuam liberadas.
     private boolean emailPendenteVerificacao = false;

@@ -13,6 +13,8 @@ public class UsuarioResponse {
     private Role role;
     private boolean ativo;
     private boolean emailPendenteVerificacao;
+    // true: o front leva o usuário para criar a própria senha antes de usar o sistema
+    private boolean senhaTemporaria;
 
     public static UsuarioResponse fromEntity(Usuario u) {
         UsuarioResponse r = new UsuarioResponse();
@@ -22,6 +24,7 @@ public class UsuarioResponse {
         r.setRole(u.getRole());
         r.setAtivo(u.isAtivo());
         r.setEmailPendenteVerificacao(u.isEmailPendenteVerificacao());
+        r.setSenhaTemporaria(u.isSenhaTemporaria());
         return r;
     }
 }

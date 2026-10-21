@@ -2,16 +2,21 @@ package com.fatec.monitoria.modules.monitor;
 
 import com.fatec.monitoria.modules.monitor.dto.AlterarAtivoRequest;
 import com.fatec.monitoria.modules.monitor.dto.ExclusaoMonitorResponse;
+import com.fatec.monitoria.modules.monitor.dto.MonitorCadastroRequest;
+import com.fatec.monitoria.modules.monitor.dto.MonitorCriadoResponse;
 import com.fatec.monitoria.modules.monitor.dto.MonitorGestaoRequest;
 import com.fatec.monitoria.modules.monitor.dto.MonitorGestaoResponse;
+import com.fatec.monitoria.modules.monitor.dto.SenhaTemporariaResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +34,23 @@ public class MonitorGestaoController {
     @GetMapping("/gestao")
     public ResponseEntity<List<MonitorGestaoResponse>> listar() {
         return ResponseEntity.ok(service.listar());
+    }
+
+    // Cadastro manual feito pelo supervisor: devolve o monitor e a senha temporária (só aqui).
+    @PostMapping("/gestao")
+    public ResponseEntity<MonitorCriadoResponse> criar(
+            Authentication authentication,
+            @Valid @RequestBody MonitorCadastroRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.criar(request, authentication.getName()));
+    }
+
+    // Gera outra senha temporária para o monitor (mostrada só nesta resposta).
+    @PostMapping("/{id}/senha-temporaria")
+    public ResponseEntity<SenhaTemporariaResponse> gerarSenhaTemporaria(
+            Authentication authentication,
+            @PathVariable String id) {
+        return ResponseEntity.ok(service.gerarNovaSenha(id, authentication.getName()));
     }
 
     @PutMapping("/{id}/gestao")
