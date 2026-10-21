@@ -50,10 +50,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/conta-agencia/aprovar").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/conta-agencia/devolver").hasAnyRole("SUPERVISOR", "ADMIN")
 
-                        // Supervisor gerencia monitores (listar, editar, ativar/desativar)
+                        // Supervisor gerencia monitores (listar, editar, ativar/desativar, excluir)
                         .requestMatchers(HttpMethod.GET, "/api/monitores/gestao").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/monitores/*/gestao").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/monitores/*/ativo").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/monitores/*/exclusao").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/monitores/*").hasAnyRole("SUPERVISOR", "ADMIN")
 
                         // Listagem geral e troca de status de monitores: só supervisão
                         // (antes caíam no anyRequest e qualquer usuário logado alcançava)

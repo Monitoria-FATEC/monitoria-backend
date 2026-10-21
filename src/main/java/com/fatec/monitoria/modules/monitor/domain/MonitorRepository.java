@@ -15,6 +15,9 @@ public interface MonitorRepository extends MongoRepository<Monitor, String> {
 
     boolean existsByRa(String ra);
 
+    // quantos monitores usam esse RA (dados antigos podem ter RA repetido)
+    long countByRa(String ra);
+
     // telefone já usado por outro monitor (recebe as duas grafias: com e sem máscara)
     boolean existsByTelefoneInAndIdNot(Collection<String> telefones, String id);
 }
