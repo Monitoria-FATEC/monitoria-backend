@@ -2,6 +2,7 @@ package com.fatec.monitoria.modules.termo;
 
 import com.fatec.monitoria.modules.inscricao.domain.Inscricao;
 import com.fatec.monitoria.modules.inscricao.domain.InscricaoRepository;
+import com.fatec.monitoria.modules.inscricao.domain.RegistroHistorico;
 import com.fatec.monitoria.modules.inscricao.domain.StatusInscricao;
 import com.fatec.monitoria.modules.monitor.domain.Monitor;
 import com.fatec.monitoria.modules.monitor.domain.MonitorRepository;
@@ -10,6 +11,8 @@ import com.fatec.monitoria.modules.termo.domain.TermoCompromisso;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromissoRepository;
 import com.fatec.monitoria.modules.termo.dto.AtualizarTermoRequest;
 import com.fatec.monitoria.modules.termo.dto.TermoCompromissoRequest;
+import com.fatec.monitoria.modules.usuario.domain.Usuario;
+import com.fatec.monitoria.modules.usuario.domain.UsuarioRepository;
 import com.fatec.monitoria.validacao.CampoDuplicadoException;
 import com.fatec.monitoria.validacao.CampoInvalidoException;
 import com.fatec.monitoria.validacao.CpfValidator;
@@ -44,6 +47,7 @@ public class TermoCompromissoService {
     private final TermoCompromissoRepository repository;
     private final MonitorRepository monitorRepository;
     private final InscricaoRepository inscricaoRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public TermoCompromisso enviar(TermoCompromissoRequest request) {
         String oferta = request.getOferta().trim().toLowerCase();
@@ -155,12 +159,25 @@ public class TermoCompromissoService {
         termo.setDataEnvio(LocalDateTime.now());
         TermoCompromisso salvo = repository.save(termo);
 
-        // devolve a inscrição para o supervisor conferir de novo
+        // devolve a inscrição para o supervisor conferir de novo e registra o reenvio no histórico
         if (inscricao != null) {
+            StatusInscricao anterior = inscricao.getStatus();
             inscricao.setStatus(StatusInscricao.AGUARDANDO_SUPERVISOR);
             inscricao.setJustificativaDevolucao(null);
             inscricao.setDataLimiteCorrecao(null);
             inscricao.setDataAtualizacao(LocalDateTime.now());
+
+            RegistroHistorico registro = new RegistroHistorico();
+            registro.setAcao("REENVIO_DO_TERMO");
+            registro.setStatusAnterior(anterior);
+            registro.setStatusNovo(StatusInscricao.AGUARDANDO_SUPERVISOR);
+            registro.setIdUsuario(usuarioRepository.findByEmailIgnoreCase(email)
+                    .map(Usuario::getId).orElse(null));
+            registro.setNomeUsuario(monitor.getNome());
+            registro.setPerfil("MONITOR");
+            registro.setData(LocalDateTime.now());
+            inscricao.getHistorico().add(registro);
+
             inscricaoRepository.save(inscricao);
         }
         return salvo;

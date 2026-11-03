@@ -1,6 +1,7 @@
 package com.fatec.monitoria.modules.inscricao.dto;
 
 import com.fatec.monitoria.modules.inscricao.domain.Inscricao;
+import com.fatec.monitoria.modules.inscricao.domain.RegistroHistorico;
 import com.fatec.monitoria.modules.inscricao.domain.StatusInscricao;
 import com.fatec.monitoria.modules.monitor.domain.Monitor;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromisso;
@@ -8,18 +9,22 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class InscricaoDetalheResponse {
 
     private String id;
     private StatusInscricao status;
+    private String idSupervisor;
     private String justificativaDevolucao;
     private LocalDate dataLimiteCorrecao;
     private boolean enviadoParaAssinatura;
     private LocalDateTime dataEnvioAssinatura;
     private LocalDateTime dataSubmissao;
     private LocalDateTime dataAtualizacao;
+    private List<RegistroHistorico> historico = new ArrayList<>();
     private MonitorInfo monitor;
     private TermoInfo termo;
 
@@ -59,12 +64,15 @@ public class InscricaoDetalheResponse {
         InscricaoDetalheResponse r = new InscricaoDetalheResponse();
         r.id = i.getId();
         r.status = i.getStatus();
+        r.idSupervisor = i.getIdSupervisor();
         r.justificativaDevolucao = i.getJustificativaDevolucao();
         r.dataLimiteCorrecao = i.getDataLimiteCorrecao();
         r.enviadoParaAssinatura = i.isEnviadoParaAssinatura();
         r.dataEnvioAssinatura = i.getDataEnvioAssinatura();
         r.dataSubmissao = i.getDataSubmissao();
         r.dataAtualizacao = i.getDataAtualizacao();
+        // inscrições antigas podem não ter histórico gravado
+        r.historico = i.getHistorico() != null ? i.getHistorico() : new ArrayList<>();
 
         if (m != null) {
             MonitorInfo mi = new MonitorInfo();

@@ -1,10 +1,12 @@
 package com.fatec.monitoria.modules.inscricao.dto;
 
 import com.fatec.monitoria.modules.inscricao.domain.Inscricao;
+import com.fatec.monitoria.modules.inscricao.domain.RegistroHistorico;
 import com.fatec.monitoria.modules.inscricao.domain.StatusInscricao;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class InscricaoResponse {
 
@@ -20,6 +22,7 @@ public class InscricaoResponse {
     private LocalDateTime dataEnvioAssinatura;
     private LocalDateTime dataSubmissao;
     private LocalDateTime dataAtualizacao;
+    private List<RegistroHistorico> historico;
 
     public static InscricaoResponse fromEntity(Inscricao i) {
         InscricaoResponse r = new InscricaoResponse();
@@ -35,6 +38,7 @@ public class InscricaoResponse {
         r.dataEnvioAssinatura = i.getDataEnvioAssinatura();
         r.dataSubmissao = i.getDataSubmissao();
         r.dataAtualizacao = i.getDataAtualizacao();
+        r.historico = i.getHistorico();
         return r;
     }
 
@@ -50,4 +54,5 @@ public class InscricaoResponse {
     public LocalDateTime getDataEnvioAssinatura() { return dataEnvioAssinatura; }
     public LocalDateTime getDataSubmissao() { return dataSubmissao; }
     public LocalDateTime getDataAtualizacao() { return dataAtualizacao; }
+    public List<RegistroHistorico> getHistorico() { return historico; }
 }
