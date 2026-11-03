@@ -40,9 +40,15 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // Página pública de horários (aluno não precisa logar)
+                        .requestMatchers(HttpMethod.GET, "/api/horarios/publico").permitAll()
+
                         // Cadastro do monitor e envio do termo: só com a conta confirmada e logada
                         .requestMatchers(HttpMethod.POST, "/api/monitores", "/api/termos-compromisso").hasRole("MONITOR")
                         .requestMatchers("/api/monitores/me/**").hasRole("MONITOR")
+
+                        // Supervisor vê os horários de todos os monitores (aba Horários e PDF)
+                        .requestMatchers(HttpMethod.GET, "/api/horarios").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/termos-compromisso/*").hasRole("MONITOR")
 
                         // Supervisor confere conta e agência dos monitores

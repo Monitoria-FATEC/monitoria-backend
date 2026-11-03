@@ -12,6 +12,7 @@ import com.fatec.monitoria.modules.monitor.dto.PerfilMonitorRequest;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromisso;
 import com.fatec.monitoria.modules.termo.domain.TermoCompromissoRepository;
 import com.fatec.monitoria.validacao.CampoDuplicadoException;
+import com.fatec.monitoria.validacao.CampoInvalidoException;
 import com.fatec.monitoria.validacao.Regras;
 import com.fatec.monitoria.validacao.TelefoneBrValidator;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +71,19 @@ public class MonitorDashboardService {
             }
         }
 
+        if (request.getVigenciaInicio() != null && request.getVigenciaFim() == null) {
+            throw new CampoInvalidoException("vigenciaFim", "Informe o fim da vigência");
+        }
+        if (request.getVigenciaFim() != null && request.getVigenciaInicio() == null) {
+            throw new CampoInvalidoException("vigenciaInicio", "Informe o início da vigência");
+        }
+        if (request.getVigenciaInicio() != null && request.getVigenciaFim().isBefore(request.getVigenciaInicio())) {
+            throw new CampoInvalidoException("vigenciaFim", "O fim da vigência precisa ser depois do início");
+        }
+
         monitor.setTelefone(telefone);
+        monitor.setVigenciaInicio(request.getVigenciaInicio());
+        monitor.setVigenciaFim(request.getVigenciaFim());
         monitor.setLocalAtendimento(vazioParaNulo(request.getLocalAtendimento()));
         monitor.setHorariosAtendimento(vazioParaNulo(request.getHorariosAtendimento()));
         monitor.setLinkWhatsapp(vazioParaNulo(request.getLinkWhatsapp()));

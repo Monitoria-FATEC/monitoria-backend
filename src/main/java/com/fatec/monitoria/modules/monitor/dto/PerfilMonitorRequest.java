@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class PerfilMonitorRequest {
 
@@ -26,4 +28,9 @@ public class PerfilMonitorRequest {
     @Pattern(regexp = "^\\s*$|^(?i)\\s*https://(teams\\.microsoft\\.com|teams\\.live\\.com|teams\\.cloud\\.microsoft)/\\S*\\s*$",
             message = "Link do Teams inválido. Use o link da reunião ou do canal (https://teams.microsoft.com/...)")
     private String linkTeams;
+
+    // Vigência (opcional): o monitor só aparece na página de monitorias dentro deste período
+    private LocalDate vigenciaInicio;
+
+    private LocalDate vigenciaFim;
 }

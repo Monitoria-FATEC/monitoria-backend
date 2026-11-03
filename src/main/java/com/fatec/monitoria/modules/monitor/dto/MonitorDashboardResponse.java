@@ -57,6 +57,8 @@ public class MonitorDashboardResponse {
     private String linkWhatsapp;
     private String linkTeams;
     private boolean perfilAtivo;
+    private String vigenciaInicio;
+    private String vigenciaFim;
 
     // inscricao é a mais recente do monitor (null se ele ainda não tem inscrição)
     public static MonitorDashboardResponse of(Monitor monitor, TermoCompromisso termo, Inscricao inscricao) {
@@ -81,6 +83,8 @@ public class MonitorDashboardResponse {
         response.linkWhatsapp = monitor.getLinkWhatsapp();
         response.linkTeams = monitor.getLinkTeams();
         response.perfilAtivo = monitor.getPerfilAtivo() == null || monitor.getPerfilAtivo();
+        response.vigenciaInicio = monitor.getVigenciaInicio() == null ? null : monitor.getVigenciaInicio().toString();
+        response.vigenciaFim = monitor.getVigenciaFim() == null ? null : monitor.getVigenciaFim().toString();
 
         response.statusTermo = termo == null || termo.getStatus() == null ? StatusDocumento.AGUARDANDO : termo.getStatus();
         response.justificativaTermo = termo == null ? null : termo.getJustificativaDevolucao();

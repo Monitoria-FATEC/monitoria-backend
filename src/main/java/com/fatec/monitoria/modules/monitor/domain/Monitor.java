@@ -32,4 +32,9 @@ public class Monitor {
     private String justificativaContaAgencia;
     // Prazo (opcional) que o supervisor dá para o monitor corrigir conta/agência devolvida
     private LocalDate dataLimiteContaAgencia;
+
+    // Período em que o monitor atende (editado por ele no perfil). Fora dele, some da página pública.
+    // Se vazio, vale o período do termo de compromisso.
+    private LocalDate vigenciaInicio;
+    private LocalDate vigenciaFim;
 }
