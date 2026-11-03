@@ -1,5 +1,6 @@
 package com.fatec.monitoria.modules.monitor;
 
+import com.fatec.monitoria.modules.atendimento.domain.RegistroAtendimentoRepository;
 import com.fatec.monitoria.modules.horario.domain.HorarioAtendimentoRepository;
 import com.fatec.monitoria.modules.inscricao.domain.Inscricao;
 import com.fatec.monitoria.modules.inscricao.domain.InscricaoRepository;
@@ -49,6 +50,7 @@ public class MonitorGestaoService {
     private final InscricaoRepository inscricaoRepository;
     private final TermoCompromissoRepository termoRepository;
     private final HorarioAtendimentoRepository horarioRepository;
+    private final RegistroAtendimentoRepository atendimentoRepository;
     private final MonitorService monitorService;
     private final DisponibilidadeCadastroService disponibilidade;
     private final PasswordEncoder passwordEncoder;
@@ -178,13 +180,14 @@ public class MonitorGestaoService {
         return planejarExclusao(buscar(id)).resumo();
     }
 
-    // Exclusão definitiva: horários, inscrições, termos, conta de login e, por último, o monitor.
+    // Exclusão definitiva: horários, ficha de atendimentos, inscrições, termos, conta de login e, por último, o monitor.
     // O monitor sai por último para que, se algo falhar no meio, dê para tentar de novo.
     public ExclusaoMonitorResponse excluir(String id, String quemExcluiu) {
         PlanoDeExclusao plano = planejarExclusao(buscar(id));
         ExclusaoMonitorResponse resumo = plano.resumo();
 
         horarioRepository.deleteByMonitorId(plano.monitor().getId());
+        atendimentoRepository.deleteByMonitorId(plano.monitor().getId());
         inscricaoRepository.deleteAll(plano.inscricoes());
         termoRepository.deleteAll(plano.termos());
         if (plano.conta() != null) {
