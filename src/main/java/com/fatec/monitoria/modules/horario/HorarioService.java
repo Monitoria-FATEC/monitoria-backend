@@ -122,9 +122,13 @@ public class HorarioService {
                 .map(h -> {
                     Monitor m = liberados.get(h.getMonitorId());
                     DadosDoTermo termo = termos.get(m.getId());
+                    boolean compartilha = Boolean.TRUE.equals(m.getCompartilharContato());
                     return new HorarioPublicoResponse(m.getNome(), m.getCurso(), termo.disciplina(), termo.professor(),
                             h.getDiaSemana(), h.getInicio(), h.getFim(), h.getLocal(),
-                            vazioParaNulo(m.getLinkWhatsapp()), vazioParaNulo(m.getLinkTeams()));
+                            compartilha,
+                            compartilha ? vazioParaNulo(m.getEmail()) : null,
+                            compartilha ? vazioParaNulo(m.getLinkWhatsapp()) : null,
+                            compartilha ? vazioParaNulo(m.getLinkTeams()) : null);
                 })
                 .toList();
     }

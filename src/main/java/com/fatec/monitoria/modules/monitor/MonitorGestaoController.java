@@ -55,9 +55,10 @@ public class MonitorGestaoController {
 
     @PutMapping("/{id}/gestao")
     public ResponseEntity<MonitorGestaoResponse> atualizar(
+            Authentication authentication,
             @PathVariable String id,
             @Valid @RequestBody MonitorGestaoRequest request) {
-        return ResponseEntity.ok(service.atualizar(id, request));
+        return ResponseEntity.ok(service.atualizar(id, request, authentication.getName()));
     }
 
     @PatchMapping("/{id}/ativo")

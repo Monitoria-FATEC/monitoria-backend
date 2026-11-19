@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-// Uma linha da ficha de atendimentos: um atendimento que o monitor fez para um aluno.
+// Uma linha do registro de atendimentos: um atendimento que o monitor fez para um aluno.
 @Data
 @Document(collection = "registros_atendimento")
 public class RegistroAtendimento {
@@ -21,6 +21,8 @@ public class RegistroAtendimento {
     private String monitorId;
 
     private String aluno;
+    // RA do aluno atendido (opcional, 13 dígitos)
+    private String raAluno;
     private String atividade;
     private LocalDate data;
 

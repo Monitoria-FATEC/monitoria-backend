@@ -65,6 +65,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/monitores/*/exclusao").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/monitores/*").hasAnyRole("SUPERVISOR", "ADMIN")
 
+                        // Limpeza de dados órfãos (inscrições sem monitor, termos sem dono): só supervisão
+                        .requestMatchers(HttpMethod.GET, "/api/limpeza/orfaos").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/limpeza/orfaos").hasAnyRole("SUPERVISOR", "ADMIN")
+
                         // Listagem geral e troca de status de monitores: só supervisão
                         // (antes caíam no anyRequest e qualquer usuário logado alcançava)
                         .requestMatchers(HttpMethod.GET, "/api/monitores").hasAnyRole("SUPERVISOR", "ADMIN")

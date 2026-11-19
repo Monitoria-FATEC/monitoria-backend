@@ -1,6 +1,7 @@
 package com.fatec.monitoria.modules.monitor;
 
 import com.fatec.monitoria.modules.atendimento.domain.RegistroAtendimentoRepository;
+import com.fatec.monitoria.modules.auth.VerificacaoEmailService;
 import com.fatec.monitoria.modules.horario.domain.HorarioAtendimentoRepository;
 import com.fatec.monitoria.modules.inscricao.domain.Inscricao;
 import com.fatec.monitoria.modules.inscricao.domain.InscricaoRepository;
@@ -18,8 +19,11 @@ import com.fatec.monitoria.modules.termo.domain.TermoCompromissoRepository;
 import com.fatec.monitoria.modules.usuario.domain.Role;
 import com.fatec.monitoria.modules.usuario.domain.Usuario;
 import com.fatec.monitoria.modules.usuario.domain.UsuarioRepository;
+import com.fatec.monitoria.validacao.CampoDuplicadoException;
+import com.fatec.monitoria.validacao.CampoInvalidoException;
 import com.fatec.monitoria.validacao.DisponibilidadeCadastroService;
 import com.fatec.monitoria.validacao.Regras;
+import com.fatec.monitoria.validacao.TelefoneBrValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,12 +32,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -54,6 +60,7 @@ public class MonitorGestaoService {
     private final MonitorService monitorService;
     private final DisponibilidadeCadastroService disponibilidade;
     private final PasswordEncoder passwordEncoder;
+    private final VerificacaoEmailService verificacaoEmail;
 
     // Lista todos os monitores (ativos e inativos) em ordem alfabética
     public List<MonitorGestaoResponse> listar() {
@@ -137,9 +144,12 @@ public class MonitorGestaoService {
         return new SenhaTemporariaResponse(usuario.getEmail(), senhaTemporaria);
     }
 
-    // Edita nome, e-mail, curso, conta e agência. O RA não muda (o termo é ligado a ele).
-    public MonitorGestaoResponse atualizar(String id, MonitorGestaoRequest request) {
+    // Edita todos os dados do monitor: nome, e-mail, curso, conta, agência e perfil (telefone, links,
+    // contato público e vigência). O RA não muda (o termo é ligado a ele).
+    // Se algo mudou, o monitor recebe um aviso na próxima vez que abrir o sistema.
+    public MonitorGestaoResponse atualizar(String id, MonitorGestaoRequest request, String quemEditou) {
         Monitor monitor = buscar(id);
+        List<String> alterados = new ArrayList<>();
 
         String emailAntigo = monitor.getEmail();
         String emailNovo = request.getEmail().trim().toLowerCase();
@@ -156,16 +166,95 @@ public class MonitorGestaoService {
         if (usuario != null) {
             usuario.setEmail(emailNovo);
             usuario.setNome(request.getNome().trim());
+            // e-mail novo precisa ser confirmado por código: até lá o monitor não consegue entrar
+            if (emailMudou) {
+                usuario.setEmailPendenteVerificacao(true);
+                usuario.setUltimoEnvioCodigoVerificacao(null);
+            }
             usuarioRepository.save(usuario);
+            if (emailMudou) {
+                verificacaoEmail.enviarCodigo(usuario);
+                log.info("[EMAIL ALTERADO] Código de confirmação enviado para '{}' (antes: '{}')",
+                        emailNovo, emailAntigo);
+            }
         }
+
+        String telefone = telefoneValido(request.getTelefone(), monitor.getId());
+        validarVigencia(request);
+
+        registrar(alterados, "Nome", monitor.getNome(), request.getNome().trim());
+        registrar(alterados, "E-mail", emailAntigo, emailNovo);
+        registrar(alterados, "Curso", monitor.getCurso(), request.getCurso().trim());
+        registrar(alterados, "Conta", monitor.getNumeroConta(), vazioParaNulo(request.getNumeroConta()));
+        registrar(alterados, "Agência", monitor.getAgencia(), vazioParaNulo(request.getAgencia()));
+        registrar(alterados, "Telefone", monitor.getTelefone(), telefone);
+        registrar(alterados, "Link do WhatsApp", monitor.getLinkWhatsapp(), vazioParaNulo(request.getLinkWhatsapp()));
+        registrar(alterados, "Link do Teams", monitor.getLinkTeams(), vazioParaNulo(request.getLinkTeams()));
+        registrar(alterados, "Mostrar contato na página pública",
+                Boolean.TRUE.equals(monitor.getCompartilharContato()),
+                Boolean.TRUE.equals(request.getCompartilharContato()));
+        registrar(alterados, "Vigência (início)", monitor.getVigenciaInicio(), request.getVigenciaInicio());
+        registrar(alterados, "Vigência (fim)", monitor.getVigenciaFim(), request.getVigenciaFim());
 
         monitor.setNome(request.getNome().trim());
         monitor.setEmail(emailNovo);
         monitor.setCurso(request.getCurso().trim());
         monitor.setNumeroConta(vazioParaNulo(request.getNumeroConta()));
         monitor.setAgencia(vazioParaNulo(request.getAgencia()));
+        monitor.setTelefone(telefone);
+        monitor.setLinkWhatsapp(vazioParaNulo(request.getLinkWhatsapp()));
+        monitor.setLinkTeams(vazioParaNulo(request.getLinkTeams()));
+        monitor.setCompartilharContato(Boolean.TRUE.equals(request.getCompartilharContato()));
+        monitor.setVigenciaInicio(request.getVigenciaInicio());
+        monitor.setVigenciaFim(request.getVigenciaFim());
+
+        if (!alterados.isEmpty()) {
+            // junta com um aviso que o monitor ainda não leu, para ele ver tudo o que mudou
+            List<String> todos = new ArrayList<>();
+            if (monitor.getAvisoPerfilEm() != null && monitor.getAvisoPerfilCampos() != null) {
+                todos.addAll(monitor.getAvisoPerfilCampos());
+            }
+            alterados.stream().filter(campo -> !todos.contains(campo)).forEach(todos::add);
+
+            monitor.setAvisoPerfilEm(LocalDateTime.now());
+            monitor.setAvisoPerfilPor(quemEditou);
+            monitor.setAvisoPerfilCampos(todos);
+            log.info("[PERFIL EDITADO] {} alterou o perfil do monitor '{}': {}", quemEditou, monitor.getNome(), alterados);
+        }
 
         return MonitorGestaoResponse.fromEntity(monitorRepository.save(monitor));
+    }
+
+    // anota o nome do campo só se o valor mudou (nunca guarda o valor, só o nome)
+    private void registrar(List<String> alterados, String campo, Object antes, Object depois) {
+        if (!Objects.equals(antes, depois)) {
+            alterados.add(campo);
+        }
+    }
+
+    // mesmo formato e mesma regra de unicidade do perfil editado pelo próprio monitor
+    private String telefoneValido(String telefone, String idDoMonitor) {
+        if (telefone == null || telefone.isBlank()) {
+            return null;
+        }
+        String formatado = TelefoneBrValidator.formatar(telefone);
+        List<String> grafias = List.of(formatado, TelefoneBrValidator.nacional(formatado));
+        if (monitorRepository.existsByTelefoneInAndIdNot(grafias, idDoMonitor)) {
+            throw new CampoDuplicadoException("telefone", "Este telefone já está cadastrado para outro monitor");
+        }
+        return formatado;
+    }
+
+    private void validarVigencia(MonitorGestaoRequest request) {
+        if (request.getVigenciaInicio() != null && request.getVigenciaFim() == null) {
+            throw new CampoInvalidoException("vigenciaFim", "Informe o fim da vigência");
+        }
+        if (request.getVigenciaFim() != null && request.getVigenciaInicio() == null) {
+            throw new CampoInvalidoException("vigenciaInicio", "Informe o início da vigência");
+        }
+        if (request.getVigenciaInicio() != null && request.getVigenciaFim().isBefore(request.getVigenciaInicio())) {
+            throw new CampoInvalidoException("vigenciaFim", "O fim da vigência precisa ser depois do início");
+        }
     }
 
     // Ativa ou desativa o perfil (não apaga nada)

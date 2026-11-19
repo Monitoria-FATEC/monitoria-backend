@@ -16,6 +16,10 @@ public class AtendimentoRequest {
     @Size(min = 3, max = 120, message = "O nome do aluno deve ter de 3 a 120 caracteres")
     private String aluno;
 
+    // RA do aluno: opcional. Vazio ou 13 dígitos.
+    @Pattern(regexp = "^\\s*$|^\\s*\\d{13}\\s*$", message = "O RA do aluno deve ter 13 dígitos numéricos")
+    private String raAluno;
+
     @NotBlank(message = "Descreva a atividade realizada")
     @Size(min = 10, max = 500, message = "A atividade deve ter de 10 a 500 caracteres")
     private String atividade;

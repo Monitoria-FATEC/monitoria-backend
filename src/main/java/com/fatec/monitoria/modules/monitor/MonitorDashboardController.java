@@ -34,6 +34,12 @@ public class MonitorDashboardController {
         return ResponseEntity.ok(service.atualizarPerfil(authentication.getName(), request));
     }
 
+    // O monitor clicou em "Entendi" no aviso de edição do perfil.
+    @PatchMapping("/aviso-perfil/lido")
+    public ResponseEntity<MonitorDashboardResponse> avisoPerfilLido(Authentication authentication) {
+        return ResponseEntity.ok(service.marcarAvisoPerfilLido(authentication.getName()));
+    }
+
     @PatchMapping("/desativar")
     public ResponseEntity<Void> desativar(Authentication authentication) {
         service.desativarPerfil(authentication.getName());

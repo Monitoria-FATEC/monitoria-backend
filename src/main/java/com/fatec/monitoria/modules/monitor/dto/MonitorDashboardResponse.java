@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -52,13 +54,17 @@ public class MonitorDashboardResponse {
     private String numeroConta;
     private String agencia;
     private String telefone;
-    private String localAtendimento;
-    private String horariosAtendimento;
     private String linkWhatsapp;
     private String linkTeams;
+    private boolean compartilharContato;
     private boolean perfilAtivo;
     private String vigenciaInicio;
     private String vigenciaFim;
+
+    // aviso de que o supervisor editou o perfil (avisoPerfilEm == null: nada pendente)
+    private LocalDateTime avisoPerfilEm;
+    private String avisoPerfilPor;
+    private List<String> avisoPerfilCampos;
 
     // inscricao é a mais recente do monitor (null se ele ainda não tem inscrição)
     public static MonitorDashboardResponse of(Monitor monitor, TermoCompromisso termo, Inscricao inscricao) {
@@ -78,13 +84,15 @@ public class MonitorDashboardResponse {
         response.numeroConta = monitor.getNumeroConta();
         response.agencia = monitor.getAgencia();
         response.telefone = monitor.getTelefone();
-        response.localAtendimento = monitor.getLocalAtendimento();
-        response.horariosAtendimento = monitor.getHorariosAtendimento();
         response.linkWhatsapp = monitor.getLinkWhatsapp();
         response.linkTeams = monitor.getLinkTeams();
+        response.compartilharContato = Boolean.TRUE.equals(monitor.getCompartilharContato());
         response.perfilAtivo = monitor.getPerfilAtivo() == null || monitor.getPerfilAtivo();
         response.vigenciaInicio = monitor.getVigenciaInicio() == null ? null : monitor.getVigenciaInicio().toString();
         response.vigenciaFim = monitor.getVigenciaFim() == null ? null : monitor.getVigenciaFim().toString();
+        response.avisoPerfilEm = monitor.getAvisoPerfilEm();
+        response.avisoPerfilPor = monitor.getAvisoPerfilPor();
+        response.avisoPerfilCampos = monitor.getAvisoPerfilCampos() == null ? List.of() : monitor.getAvisoPerfilCampos();
 
         response.statusTermo = termo == null || termo.getStatus() == null ? StatusDocumento.AGUARDANDO : termo.getStatus();
         response.justificativaTermo = termo == null ? null : termo.getJustificativaDevolucao();

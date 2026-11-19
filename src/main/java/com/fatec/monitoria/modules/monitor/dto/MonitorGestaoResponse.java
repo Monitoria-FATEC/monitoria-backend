@@ -19,6 +19,12 @@ public class MonitorGestaoResponse {
     private String agencia;
     private StatusDocumento statusContaAgencia;
     private LocalDateTime dataCadastro;
+    private String telefone;
+    private String linkWhatsapp;
+    private String linkTeams;
+    private boolean compartilharContato;
+    private String vigenciaInicio;
+    private String vigenciaFim;
 
     public static MonitorGestaoResponse fromEntity(Monitor m) {
         MonitorGestaoResponse dto = new MonitorGestaoResponse();
@@ -33,6 +39,12 @@ public class MonitorGestaoResponse {
         dto.setAgencia(m.getAgencia());
         dto.setStatusContaAgencia(m.getStatusContaAgencia() == null ? StatusDocumento.AGUARDANDO : m.getStatusContaAgencia());
         dto.setDataCadastro(m.getDataEnvio());
+        dto.setTelefone(m.getTelefone());
+        dto.setLinkWhatsapp(m.getLinkWhatsapp());
+        dto.setLinkTeams(m.getLinkTeams());
+        dto.setCompartilharContato(Boolean.TRUE.equals(m.getCompartilharContato()));
+        dto.setVigenciaInicio(m.getVigenciaInicio() == null ? null : m.getVigenciaInicio().toString());
+        dto.setVigenciaFim(m.getVigenciaFim() == null ? null : m.getVigenciaFim().toString());
         return dto;
     }
 }

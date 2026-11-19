@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
-// Ficha de atendimentos: cada monitor só enxerga e mexe nos próprios registros.
+// Registro de atendimentos: cada monitor só enxerga e mexe nos próprios registros.
 @Service
 @RequiredArgsConstructor
 public class AtendimentoService {
@@ -70,6 +70,8 @@ public class AtendimentoService {
 
     private void preencher(RegistroAtendimento registro, AtendimentoRequest request) {
         registro.setAluno(request.getAluno().trim());
+        String ra = request.getRaAluno() == null ? "" : request.getRaAluno().trim();
+        registro.setRaAluno(ra.isEmpty() ? null : ra);
         registro.setAtividade(request.getAtividade().trim());
         registro.setData(request.getData());
         registro.setInicio(request.getInicio());
@@ -86,7 +88,7 @@ public class AtendimentoService {
     private void exigirPerfilLiberado(Monitor monitor) {
         if (monitor.getStatusContaAgencia() != StatusDocumento.APROVADO) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "A ficha de atendimentos só é liberada após a aprovação da conta e agência");
+                    "O registro de atendimentos só é liberado após a aprovação da conta e agência");
         }
     }
 

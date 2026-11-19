@@ -33,7 +33,7 @@ public class ContaAgenciaSupervisorService {
     }
 
     public ContaAgenciaResponse aprovar(String idMonitor) {
-        Monitor monitor = buscarComContaEnviada(idMonitor);
+        Monitor monitor = buscarComContaAguardando(idMonitor);
         monitor.setStatusContaAgencia(StatusDocumento.APROVADO);
         monitor.setJustificativaContaAgencia(null);
         monitor.setDataLimiteContaAgencia(null);
@@ -42,11 +42,21 @@ public class ContaAgenciaSupervisorService {
 
     // dataLimite é opcional: prazo para o monitor corrigir.
     public ContaAgenciaResponse devolver(String idMonitor, String justificativa, LocalDate dataLimite) {
-        Monitor monitor = buscarComContaEnviada(idMonitor);
+        Monitor monitor = buscarComContaAguardando(idMonitor);
         monitor.setStatusContaAgencia(StatusDocumento.DEVOLVIDO);
         monitor.setJustificativaContaAgencia(justificativa);
         monitor.setDataLimiteContaAgencia(dataLimite);
         return ContaAgenciaResponse.fromEntity(monitorRepository.save(monitor));
+    }
+
+    // Só dá para aprovar ou devolver uma conta que está aguardando conferência.
+    private Monitor buscarComContaAguardando(String idMonitor) {
+        Monitor monitor = buscarComContaEnviada(idMonitor);
+        if (statusDe(monitor) != StatusDocumento.AGUARDANDO) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "A conta e agência deste monitor não está aguardando conferência");
+        }
+        return monitor;
     }
 
     private Monitor buscarComContaEnviada(String idMonitor) {

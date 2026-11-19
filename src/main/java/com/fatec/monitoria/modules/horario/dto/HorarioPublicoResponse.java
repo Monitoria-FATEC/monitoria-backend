@@ -1,8 +1,9 @@
 package com.fatec.monitoria.modules.horario.dto;
 
 // Visão pública (aluno, sem login): só o necessário para achar o atendimento.
-// Contato só pelos links que o próprio monitor publicou no perfil (WhatsApp e Teams).
-// De propósito, sem e-mail, telefone nem ids.
+// Os dados de contato (e-mail, WhatsApp e Teams) só vêm preenchidos quando o próprio monitor
+// marcou, no perfil, que aceita compartilhá-los (contatoCompartilhado = true).
+// De propósito, sem telefone nem ids.
 public record HorarioPublicoResponse(
         String nome,
         String curso,
@@ -12,6 +13,8 @@ public record HorarioPublicoResponse(
         String inicio,
         String fim,
         String local,
+        boolean contatoCompartilhado,
+        String email,
         String linkWhatsapp,
         String linkTeams) {
 }

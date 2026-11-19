@@ -84,10 +84,18 @@ public class MonitorDashboardService {
         monitor.setTelefone(telefone);
         monitor.setVigenciaInicio(request.getVigenciaInicio());
         monitor.setVigenciaFim(request.getVigenciaFim());
-        monitor.setLocalAtendimento(vazioParaNulo(request.getLocalAtendimento()));
-        monitor.setHorariosAtendimento(vazioParaNulo(request.getHorariosAtendimento()));
         monitor.setLinkWhatsapp(vazioParaNulo(request.getLinkWhatsapp()));
         monitor.setLinkTeams(vazioParaNulo(request.getLinkTeams()));
+        monitor.setCompartilharContato(Boolean.TRUE.equals(request.getCompartilharContato()));
+        return salvarERetornar(monitor);
+    }
+
+    // O monitor leu o aviso de que o supervisor editou o perfil dele.
+    public MonitorDashboardResponse marcarAvisoPerfilLido(String email) {
+        Monitor monitor = buscarMonitor(email);
+        monitor.setAvisoPerfilEm(null);
+        monitor.setAvisoPerfilPor(null);
+        monitor.setAvisoPerfilCampos(null);
         return salvarERetornar(monitor);
     }
 
